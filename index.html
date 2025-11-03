@@ -56,12 +56,11 @@
   .earthNumber {
     font-size: 60px;
     font-weight: 800;
-    color: #19734b;
     margin: 10px 0;
   }
-  .emoji {
-    font-size: 60px;
-    margin-top: 10px;
+  .earthIcons {
+    font-size: 50px;
+    margin-top: 5px;
   }
   .message {
     font-size: 16px;
@@ -86,13 +85,13 @@
     <div id="sliders"></div>
   </section>
 
-  <!-- 오른쪽: 결과 (지구 개수만 표시) -->
+  <!-- 오른쪽: 결과 -->
   <section class="panel">
     <h2 style="margin-top:0;">② 결과</h2>
     <div class="resultBox">
       <div>현재 당신의 생활습관으로는...</div>
       <div class="earthNumber" id="earthCount">1.0</div>
-      <div class="emoji" id="earthEmoji">🌍</div>
+      <div class="earthIcons" id="earthIcons">🌍</div>
       <div class="message" id="earthMessage">지속가능한 수준입니다. 🌱</div>
     </div>
   </section>
@@ -118,7 +117,7 @@ const activities = [
 // ===============================
 // 슬라이더 생성
 // ===============================
-const container = document.getElementById("sliders");
+const container=document.getElementById("sliders");
 activities.forEach(a=>{
   const div=document.createElement("div");
   div.className="row";
@@ -144,35 +143,41 @@ function calcTotal(){
 }
 
 // ===============================
-// 업데이트
+// 업데이트 함수
 // ===============================
 function update(){
   const total=calcTotal();
-  const earths=total/3; // 1지구 = 3톤 CO2 기준
+  const earths=total/3; // 1지구=3톤 기준
   const numEl=document.getElementById("earthCount");
-  const emojiEl=document.getElementById("earthEmoji");
+  const iconsEl=document.getElementById("earthIcons");
   const msgEl=document.getElementById("earthMessage");
 
+  // 숫자 표시
   numEl.textContent=earths.toFixed(1);
 
-  // 상태에 따라 이모지와 메시지 변경
-  if(earths <= 1){
-    emojiEl.textContent="🌍";
+  // 색상 조절
+  if(earths<=1){
     numEl.style.color="#19734b";
     msgEl.textContent="지속가능한 수준입니다. 🌱";
-  } else if(earths <= 1.5){
-    emojiEl.textContent="🌏";
+  } else if(earths<=1.5){
     numEl.style.color="#f2a900";
     msgEl.textContent="주의! 조금 더 절약이 필요합니다. ⚠️";
   } else {
-    emojiEl.textContent="🔥";
     numEl.style.color="#e63946";
     msgEl.textContent="지구가 과부하 상태입니다! 🚨";
   }
+
+  // 🌍 아이콘 개수 표시
+  const count=Math.floor(earths); // 정수 부분
+  let icons="";
+  for(let i=0;i<count;i++) icons+="🌍";
+  if(earths-count>0.5) icons+="🌎"; // 반개 느낌으로 추가
+  if(icons==="") icons="🌍";
+  iconsEl.textContent=icons;
 }
 
 // ===============================
-// 이벤트 연결
+// 이벤트 등록
 // ===============================
 activities.forEach(a=>{
   const s=document.getElementById(a.key);

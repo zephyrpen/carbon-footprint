@@ -6,42 +6,99 @@
 <title>🌱 생활습관 탄소발자국 시뮬레이터</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-  body{
+  body {
     font-family: "Pretendard", system-ui, sans-serif;
-    background:linear-gradient(180deg,#e6f7f1,#f5fefc);
-    color:#222; margin:0; padding:0;
+    background: linear-gradient(180deg, #e6f7f1, #f5fefc);
+    color: #222;
+    margin: 0;
+    padding: 0;
   }
-  header{
-    text-align:center; padding:20px 10px;
-    background:#d4f1e3;
-    box-shadow:0 2px 6px rgba(0,0,0,.1);
+  header {
+    text-align: center;
+    padding: 20px 10px;
+    background: #d4f1e3;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   }
-  header h1{margin:0;font-size:22px;}
-  header p{margin:5px 0 0;font-size:14px;color:#444;}
-  .wrap{
-    display:grid;
-    grid-template-columns:1fr 1fr; 
-    gap:20px;
-    padding:20px;
-    min-height:calc(100vh - 120px);
+  header h1 {
+    margin: 0;
+    font-size: 22px;
   }
-  .card{
-    background:white; border-radius:16px; padding:16px;
-    box-shadow:0 2px 8px rgba(0,0,0,.08);
+  header p {
+    margin: 5px 0 0;
+    font-size: 14px;
+    color: #444;
   }
-  .row{margin-bottom:12px;}
-  label{display:flex;justify-content:space-between;font-size:14px;}
-  input[type=range]{width:100%;}
-  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-  .meter{
-    text-align:center; padding:14px; border-radius:12px;
-    background:#f0faf6; border:1px solid #d1efe0;
+
+  /* ✅ 화면을 정확히 절반으로 */
+  .wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    height: calc(100vh - 100px);
+    padding: 20px;
+    gap: 20px;
   }
-  .meter .val{font-size:28px;font-weight:700;color:#19734b;}
-  .meter .unit{font-size:12px;color:#666;}
-  canvas{width:100%!important;height:320px!important;}
-  @media(max-width:900px){
-    .wrap{grid-template-columns:1fr;}
+
+  .panel {
+    flex: 1; /* 좌우가 동일한 비율 */
+    background: white;
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .row {
+    margin-bottom: 12px;
+  }
+
+  label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+  }
+
+  input[type="range"] {
+    width: 100%;
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .meter {
+    text-align: center;
+    padding: 14px;
+    border-radius: 12px;
+    background: #f0faf6;
+    border: 1px solid #d1efe0;
+  }
+
+  .meter .val {
+    font-size: 28px;
+    font-weight: 700;
+    color: #19734b;
+  }
+
+  .meter .unit {
+    font-size: 12px;
+    color: #666;
+  }
+
+  canvas {
+    width: 100% !important;
+    height: 320px !important;
+  }
+
+  @media (max-width: 900px) {
+    .wrap {
+      flex-direction: column;
+      height: auto;
+    }
   }
 </style>
 </head>
@@ -52,14 +109,14 @@
 </header>
 
 <div class="wrap">
-  <!-- 좌측 패널 -->
-  <section class="card">
+  <!-- 좌: 생활습관 조정 -->
+  <section class="panel">
     <h2 style="margin-top:0;font-size:18px;">① 생활습관 조정</h2>
     <div id="sliders"></div>
   </section>
 
-  <!-- 우측 결과 -->
-  <section class="card">
+  <!-- 우: 결과 -->
+  <section class="panel">
     <h2 style="margin-top:0;font-size:18px;">② 결과</h2>
     <div class="grid-2">
       <div class="meter">
@@ -77,31 +134,31 @@
 
 <script>
 // ===============================
-// 데이터 설정
+// 변수 설정
 // ===============================
 const activities = [
-  { key:"transport", label:"교통수단 이용 (자동차 중심 ↔ 대중교통 중심)", unit:"톤", coef:1.8 },
-  { key:"electricity", label:"전기 사용량 (적음 ↔ 많음)", unit:"톤", coef:1.4 },
-  { key:"heating", label:"난방/냉방 사용 (절약 ↔ 과다)", unit:"톤", coef:1.2 },
-  { key:"diet", label:"식습관 (채식 ↔ 육식 위주)", unit:"톤", coef:1.5 },
-  { key:"consumption", label:"소비습관 (절약 ↔ 과소비)", unit:"톤", coef:1.0 },
-  { key:"recycle", label:"재활용률 (낮음 ↔ 높음)", unit:"톤", coef:-1.0 },
-  { key:"travel", label:"여행 빈도 (적음 ↔ 잦음)", unit:"톤", coef:0.8 },
-  { key:"water", label:"물 사용 (절약 ↔ 낭비)", unit:"톤", coef:0.6 },
-  { key:"internet", label:"인터넷 사용시간 (적음 ↔ 많음)", unit:"톤", coef:0.4 },
-  { key:"housing", label:"주거 형태 (공동주택 ↔ 단독주택)", unit:"톤", coef:0.5 }
+  { key: "transport", label: "교통수단 이용 (자동차 중심 ↔ 대중교통 중심)", coef: 1.8 },
+  { key: "electricity", label: "전기 사용량 (적음 ↔ 많음)", coef: 1.4 },
+  { key: "heating", label: "난방/냉방 사용 (절약 ↔ 과다)", coef: 1.2 },
+  { key: "diet", label: "식습관 (채식 ↔ 육식 위주)", coef: 1.5 },
+  { key: "consumption", label: "소비습관 (절약 ↔ 과소비)", coef: 1.0 },
+  { key: "recycle", label: "재활용률 (낮음 ↔ 높음)", coef: -1.0 },
+  { key: "travel", label: "여행 빈도 (적음 ↔ 잦음)", coef: 0.8 },
+  { key: "water", label: "물 사용 (절약 ↔ 낭비)", coef: 0.6 },
+  { key: "internet", label: "인터넷 사용시간 (적음 ↔ 많음)", coef: 0.4 },
+  { key: "housing", label: "주거 형태 (공동주택 ↔ 단독주택)", coef: 0.5 },
 ];
 
 // ===============================
 // 슬라이더 생성
 // ===============================
 const container = document.getElementById("sliders");
-activities.forEach(act=>{
-  const div=document.createElement("div");
-  div.className="row";
-  div.innerHTML=`
-    <label>${act.label}<span id="out_${act.key}">50</span></label>
-    <input type="range" id="${act.key}" min="0" max="100" value="50" step="1">
+activities.forEach((a) => {
+  const div = document.createElement("div");
+  div.className = "row";
+  div.innerHTML = `
+    <label>${a.label}<span id="out_${a.key}">50</span></label>
+    <input type="range" id="${a.key}" min="0" max="100" value="50" step="1">
   `;
   container.appendChild(div);
 });
@@ -109,74 +166,68 @@ activities.forEach(act=>{
 // ===============================
 // 계산 함수
 // ===============================
-function calculateTotal(){
-  let total=0;
-  activities.forEach(act=>{
-    const val=document.getElementById(act.key).value;
-    const factor=(val-50)/50; // -1 ~ +1 범위
-    const contribution=act.coef * (1+factor);
-    total+=contribution>0?contribution:0;
+function calcTotal() {
+  let total = 0;
+  activities.forEach((a) => {
+    const v = document.getElementById(a.key).value;
+    const factor = (v - 50) / 50;
+    const c = a.coef * (1 + factor);
+    total += c > 0 ? c : 0;
   });
   return total;
 }
 
 // ===============================
-// 결과 업데이트
+// 결과 표시
 // ===============================
-const totalEl=document.getElementById("totalCO2");
-const earthEl=document.getElementById("earths");
-const ctx=document.getElementById("chart").getContext("2d");
-
-let chart=new Chart(ctx,{
-  type:"doughnut",
-  data:{
-    labels:activities.map(a=>a.label.split(" ")[0]),
-    datasets:[{
-      data:Array(activities.length).fill(0),
-      backgroundColor:[
-        "#72c2a7","#a3d9a5","#f2c94c","#f2994a","#eb5757",
-        "#56ccf2","#bb6bd9","#27ae60","#2d9cdb","#9b51e0"
-      ]
-    }]
+const totalEl = document.getElementById("totalCO2");
+const earthEl = document.getElementById("earths");
+const ctx = document.getElementById("chart").getContext("2d");
+let chart = new Chart(ctx, {
+  type: "doughnut",
+  data: {
+    labels: activities.map((a) => a.label.split(" ")[0]),
+    datasets: [
+      {
+        data: Array(activities.length).fill(0),
+        backgroundColor: [
+          "#72c2a7", "#a3d9a5", "#f2c94c", "#f2994a", "#eb5757",
+          "#56ccf2", "#bb6bd9", "#27ae60", "#2d9cdb", "#9b51e0",
+        ],
+      },
+    ],
   },
-  options:{
-    plugins:{
-      legend:{position:"bottom"},
-      tooltip:{callbacks:{label:(ctx)=>`${ctx.label}: ${ctx.formattedValue}톤`}}
+  options: {
+    plugins: {
+      legend: { position: "bottom" },
+      tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${ctx.formattedValue}톤` } },
     },
-    cutout:"65%"
-  }
+    cutout: "65%",
+  },
 });
 
-// ===============================
-// 실시간 업데이트
-// ===============================
-function update(){
-  const total = calculateTotal();
+function update() {
+  const total = calcTotal();
   totalEl.textContent = total.toFixed(1);
-
-  // 지구 개수 (1 지구=3톤 기준)
-  const earths = total/3;
+  const earths = total / 3; // 1지구=3톤 기준
   earthEl.textContent = earths.toFixed(1);
-
-  // 그래프 갱신
-  chart.data.datasets[0].data = activities.map(act=>{
-    const val=document.getElementById(act.key).value;
-    const factor=(val-50)/50;
-    const c=act.coef*(1+factor);
-    return c>0?c:0;
+  chart.data.datasets[0].data = activities.map((a) => {
+    const v = document.getElementById(a.key).value;
+    const factor = (v - 50) / 50;
+    const c = a.coef * (1 + factor);
+    return c > 0 ? c : 0;
   });
   chart.update();
 }
 
 // ===============================
-// 슬라이더 이벤트 등록
+// 이벤트 등록
 // ===============================
-activities.forEach(act=>{
-  const slider=document.getElementById(act.key);
-  const out=document.getElementById("out_"+act.key);
-  slider.addEventListener("input",()=>{
-    out.textContent=slider.value;
+activities.forEach((a) => {
+  const s = document.getElementById(a.key);
+  const o = document.getElementById("out_" + a.key);
+  s.addEventListener("input", () => {
+    o.textContent = s.value;
     update();
   });
 });

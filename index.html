@@ -18,7 +18,13 @@
   }
   header h1{margin:0;font-size:22px;}
   header p{margin:5px 0 0;font-size:14px;color:#444;}
-  .wrap{display:grid;grid-template-columns:340px 1fr;gap:20px;padding:20px;}
+  .wrap{
+    display:grid;
+    grid-template-columns:1fr 1fr; 
+    gap:20px;
+    padding:20px;
+    min-height:calc(100vh - 120px);
+  }
   .card{
     background:white; border-radius:16px; padding:16px;
     box-shadow:0 2px 8px rgba(0,0,0,.08);

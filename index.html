@@ -36,7 +36,7 @@
     flex: 1;
     background: white;
     border-radius: 16px;
-    padding: 16px;
+    padding: 20px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     display: flex;
     flex-direction: column;
@@ -45,46 +45,28 @@
   .row { margin-bottom: 12px; }
   label { display: flex; justify-content: space-between; font-size: 14px; }
   input[type="range"] { width: 100%; }
-  .earthGauge {
-    position: relative;
-    width: 100%;
-    height: 280px;
-    background: #ecfdf5;
-    border-radius: 12px;
+  .resultBox {
     display: flex;
-    align-items: flex-end;
+    flex-direction: column;
     justify-content: center;
-    overflow: hidden;
-    border: 2px solid #cce3d8;
-  }
-  .earthFill {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 0%;
-    background: linear-gradient(180deg, #3bc47c, #1b7e47);
-    transition: height 0.6s ease;
-  }
-  .earthIcon {
-    position: relative;
-    z-index: 2;
-    font-size: 80px;
-    margin-bottom: 40px;
-  }
-  .earthLabel {
-    position: absolute;
-    top: 15px;
-    width: 100%;
+    align-items: center;
+    flex: 1;
     text-align: center;
-    font-size: 18px;
-    font-weight: 600;
-    color: #333;
   }
-  .earthText {
-    text-align: center;
+  .earthNumber {
+    font-size: 60px;
+    font-weight: 800;
+    color: #19734b;
+    margin: 10px 0;
+  }
+  .emoji {
+    font-size: 60px;
     margin-top: 10px;
+  }
+  .message {
     font-size: 16px;
+    color: #444;
+    margin-top: 10px;
   }
   @media (max-width: 900px) {
     .wrap { flex-direction: column; height: auto; }
@@ -94,29 +76,24 @@
 <body>
 <header>
   <h1>🌏 생활습관 탄소발자국 시뮬레이터</h1>
-  <p>10가지 생활습관을 조정하며 내가 사용하는 ‘지구 개수’를 확인해보세요.</p>
+  <p>생활습관을 조정하여 내가 사용하는 ‘지구 개수’를 확인하세요.</p>
 </header>
 
 <div class="wrap">
-  <!-- 왼쪽: 슬라이더 조정 -->
+  <!-- 왼쪽: 생활습관 조정 -->
   <section class="panel">
     <h2 style="margin-top:0;">① 생활습관 조정</h2>
     <div id="sliders"></div>
   </section>
 
-  <!-- 오른쪽: 지구개수 게이지 -->
+  <!-- 오른쪽: 결과 (지구 개수만 표시) -->
   <section class="panel">
-    <h2 style="margin-top:0;">② 결과 — 내가 쓰는 지구는?</h2>
-    <div class="earthGauge">
-      <div class="earthFill" id="earthFill"></div>
-      <div class="earthIcon">🌍</div>
-      <div class="earthLabel">지속가능선 (1지구)</div>
-    </div>
-    <div class="earthText">
-      <strong id="earthCount">1.0</strong> 개의 지구가 필요합니다.
-      <p style="font-size:13px;color:#555;margin-top:5px;">
-        1.0 이하 → 지속가능 🌱 | 1.0 초과 → 과소비 🚨
-      </p>
+    <h2 style="margin-top:0;">② 결과</h2>
+    <div class="resultBox">
+      <div>현재 당신의 생활습관으로는...</div>
+      <div class="earthNumber" id="earthCount">1.0</div>
+      <div class="emoji" id="earthEmoji">🌍</div>
+      <div class="message" id="earthMessage">지속가능한 수준입니다. 🌱</div>
     </div>
   </section>
 </div>
@@ -141,7 +118,7 @@ const activities = [
 // ===============================
 // 슬라이더 생성
 // ===============================
-const container=document.getElementById("sliders");
+const container = document.getElementById("sliders");
 activities.forEach(a=>{
   const div=document.createElement("div");
   div.className="row";
@@ -153,7 +130,7 @@ activities.forEach(a=>{
 });
 
 // ===============================
-// 계산 & 업데이트
+// 계산 함수
 // ===============================
 function calcTotal(){
   let total=0;
@@ -166,26 +143,36 @@ function calcTotal(){
   return total;
 }
 
+// ===============================
+// 업데이트
+// ===============================
 function update(){
   const total=calcTotal();
-  const earths=total/3; // 1지구=3톤 기준
-  const percent=Math.min(earths*100,200); // 200%=2지구 제한
-  document.getElementById("earthFill").style.height=Math.min(percent,200)+"%";
-  document.getElementById("earthCount").textContent=earths.toFixed(1);
+  const earths=total/3; // 1지구 = 3톤 CO2 기준
+  const numEl=document.getElementById("earthCount");
+  const emojiEl=document.getElementById("earthEmoji");
+  const msgEl=document.getElementById("earthMessage");
 
-  // 색 변화 (지속가능 / 위험)
-  const fill=document.getElementById("earthFill");
-  if(earths<=1){
-    fill.style.background="linear-gradient(180deg,#3bc47c,#1b7e47)";
-  }else if(earths<=1.5){
-    fill.style.background="linear-gradient(180deg,#f2c94c,#f2994a)";
-  }else{
-    fill.style.background="linear-gradient(180deg,#eb5757,#9b2226)";
+  numEl.textContent=earths.toFixed(1);
+
+  // 상태에 따라 이모지와 메시지 변경
+  if(earths <= 1){
+    emojiEl.textContent="🌍";
+    numEl.style.color="#19734b";
+    msgEl.textContent="지속가능한 수준입니다. 🌱";
+  } else if(earths <= 1.5){
+    emojiEl.textContent="🌏";
+    numEl.style.color="#f2a900";
+    msgEl.textContent="주의! 조금 더 절약이 필요합니다. ⚠️";
+  } else {
+    emojiEl.textContent="🔥";
+    numEl.style.color="#e63946";
+    msgEl.textContent="지구가 과부하 상태입니다! 🚨";
   }
 }
 
 // ===============================
-// 이벤트 등록
+// 이벤트 연결
 // ===============================
 activities.forEach(a=>{
   const s=document.getElementById(a.key);

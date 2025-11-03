@@ -1,193 +1,317 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>🌏 생활습관 탄소발자국 시뮬레이터</title>
-<style>
-  body {
-    font-family: "Pretendard", system-ui, sans-serif;
-    background: linear-gradient(180deg, #e8f7f1, #f5fefc);
-    color: #222;
-    margin: 0;
-  }
-  header {
-    text-align: center;
-    padding: 20px;
-    background: #d4f1e3;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  }
-  header h1 {
-    margin: 0;
-    font-size: 22px;
-  }
-  header p {
-    margin: 5px 0 0;
-    font-size: 14px;
-    color: #444;
-  }
-  .wrap {
-    display: flex;
-    height: calc(100vh - 120px);
-    padding: 20px;
-    gap: 20px;
-  }
-  .panel {
-    flex: 1;
-    background: white;
-    border-radius: 16px;
-    padding: 20px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-  }
-  .row { margin-bottom: 12px; }
-  label { display: flex; justify-content: space-between; font-size: 14px; }
-  input[type="range"] { width: 100%; }
-  .resultBox {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    flex: 1;
-    text-align: center;
-  }
-  .earthNumber {
-    font-size: 60px;
-    font-weight: 800;
-    margin: 10px 0;
-  }
-  .earthIcons {
-    font-size: 50px;
-    margin-top: 5px;
-  }
-  .message {
-    font-size: 16px;
-    color: #444;
-    margin-top: 10px;
-  }
-  @media (max-width: 900px) {
-    .wrap { flex-direction: column; height: auto; }
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>나의 탄소 발자국 시뮬레이터</title>
+    <style>
+        /* 기본 스타일 & 폰트 설정 */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f0f9f4;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* 전체를 감싸는 컨테이너 */
+        .container {
+            max-width: 500px;
+            width: 100%;
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            padding: 30px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        /* 페이지 전환을 위한 기본 숨김 처리 */
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+        }
+
+        /* 제목 스타일 */
+        h1 {
+            color: #2a8a5f;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        h2 {
+            font-size: 22px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        /* 설명 텍스트 */
+        p {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #555;
+        }
+        
+        /* 질문 카드 스타일 */
+        .question-card {
+            background-color: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .question-card legend {
+            font-weight: 700;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        .question-card label {
+            display: block;
+            background-color: #e9ecef;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .question-card input[type="radio"] {
+            display: none;
+        }
+        .question-card input[type="radio"]:checked + label {
+            background-color: #2a8a5f;
+            color: white;
+            font-weight: 700;
+        }
+
+        /* 버튼 스타일 */
+        .btn {
+            background-color: #2a8a5f;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+            width: 100%;
+        }
+        .btn:hover {
+            background-color: #216e4b;
+        }
+        .btn-secondary {
+            background-color: #e9ecef;
+            color: #333;
+        }
+        .btn-secondary:hover {
+            background-color: #ced4da;
+        }
+
+        /* 결과 페이지 스타일 */
+        .result-box {
+            background-color: #e6f4ec;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .result-box .total {
+            font-size: 36px;
+            font-weight: 700;
+            color: #2a8a5f;
+        }
+        .result-box .comparison {
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        /* 솔루션 페이지 스타일 */
+        .action-plan {
+            background-color: #fff9e6;
+            border: 1px solid #ffeba7;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .action-plan strong {
+            color: #d97706;
+        }
+    </style>
 </head>
 <body>
-<header>
-  <h1>🌏 생활습관 탄소발자국 시뮬레이터</h1>
-  <p>생활습관을 조정하여 내가 사용하는 ‘지구 개수’를 확인하세요.</p>
-</header>
 
-<div class="wrap">
-  <!-- 왼쪽: 생활습관 조정 -->
-  <section class="panel">
-    <h2 style="margin-top:0;">① 생활습관 조정</h2>
-    <div id="sliders"></div>
-  </section>
+    <div class="container">
+        <div id="mainPage" class="page active">
+            <h1>🌍<br>나의 하루가 지구에 남기는<br>발자국은?</h1>
+            <p>탄소 발자국이 무엇인지 간단히 알아보고, 몇 가지 질문에 답해서 나의 하루가 지구에 얼마나 영향을 미치는지 확인해봐요!</p>
+            <button id="startButton" class="btn">시작하기</button>
+        </div>
 
-  <!-- 오른쪽: 결과 -->
-  <section class="panel">
-    <h2 style="margin-top:0;">② 결과</h2>
-    <div class="resultBox">
-      <div>현재 당신의 생활습관으로는...</div>
-      <div class="earthNumber" id="earthCount">1.0</div>
-      <div class="earthIcons" id="earthIcons">🌍</div>
-      <div class="message" id="earthMessage">지속가능한 수준입니다. 🌱</div>
+        <div id="quizPage" class="page">
+            <h2>나의 하루 탐색하기</h2>
+            <form id="quizForm">
+                <fieldset class="question-card">
+                    <legend>① 등하교 & 이동 🚌</legend>
+                    <input type="radio" id="q1a" name="q1" value="10" required><label for="q1a">도보 / 자전거</label>
+                    <input type="radio" id="q1b" name="q1" value="100"><label for="q1b">버스 / 지하철</label>
+                    <input type="radio" id="q1c" name="q1" value="300"><label for="q1c">부모님 차</label>
+                </fieldset>
+                
+                <fieldset class="question-card">
+                    <legend>② 식사 🍔</legend>
+                    <input type="radio" id="q2a" name="q2" value="150" required><label for="q2a">채식 위주</label>
+                    <input type="radio" id="q2b" name="q2" value="400"><label for="q2b">일반식 (고기 포함)</label>
+                    <input type="radio" id="q2c" name="q2" value="800"><label for="q2c">육류(소/돼지) 위주</label>
+                </fieldset>
+
+                <fieldset class="question-card">
+                    <legend>③ 간식 & 음료 ☕</legend>
+                    <input type="radio" id="q3a" name="q3" value="10" required><label for="q3a">0번 (텀블러 사용!)</label>
+                    <input type="radio" id="q3b" name="q3" value="100"><label for="q3b">1~2번</label>
+                    <input type="radio" id="q3c" name="q3" value="200"><label for="q3c">3번 이상</label>
+                </fieldset>
+
+                <fieldset class="question-card">
+                    <legend>④ 전기 사용 ⚡️</legend>
+                    <input type="radio" id="q4a" name="q4" value="50" required><label for="q4a">1시간 미만</label>
+                    <input type="radio" id="q4b" name="q4" value="150"><label for="q4b">1~3시간</label>
+                    <input type="radio" id="q4c" name="q4" value="300"><label for="q4c">3시간 이상</label>
+                </fieldset>
+                
+                <fieldset class="question-card">
+                    <legend>⑤ 쓰레기 🗑️</legend>
+                    <input type="radio" id="q5a" name="q5" value="10" required><label for="q5a">완벽하게 했음</label>
+                    <input type="radio" id="q5b" name="q5" value="50"><label for="q5b">대부분 했음</label>
+                    <input type="radio" id="q5c" name="q5" value="150"><label for="q5c">거의 못했음</label>
+                </fieldset>
+                <button type="submit" class="btn">결과 확인하기</button>
+            </form>
+        </div>
+
+        <div id="resultPage" class="page">
+            <h2>나의 탄소 발자국 리포트</h2>
+            <div class="result-box">
+                <p>오늘 당신이 남긴 탄소 발자국은</p>
+                <div id="totalFootprint" class="total"></div>
+                <p class="comparison">
+                    이만큼은 🌲소나무 <strong id="treeCount"></strong>그루가 흡수해야 하는 양,<br>
+                    스마트폰을 <strong id="chargeCount"></strong>번 충전할 수 있는 양이에요!
+                </p>
+            </div>
+            <p>아래 분야에서 탄소를 가장 많이 배출했어요.</p>
+            <h3 id="maxCategory"></h3>
+            <button id="showSolutionButton" class="btn">지구를 위한 액션 플랜 보기</button>
+            <button id="restartButton1" class="btn btn-secondary">다시 해보기</button>
+        </div>
+
+        <div id="solutionPage" class="page">
+            <h2>지구를 위한 나의 액션 플랜</h2>
+            <div class="action-plan">
+                <p>가장 많은 탄소를 배출한 분야는 <strong id="solutionCategory"></strong> 이네요!</p>
+                <p id="solutionText"></p>
+            </div>
+            <button id="restartButton2" class="btn">처음으로</button>
+        </div>
     </div>
-  </section>
-</div>
 
-<script>
-// ===============================
-// 변수 설정
-// ===============================
-const activities = [
-  { key:"transport", label:"교통수단 이용 (자동차 중심 ↔ 대중교통 중심)", coef:1.8 },
-  { key:"electricity", label:"전기 사용량 (적음 ↔ 많음)", coef:1.4 },
-  { key:"heating", label:"난방/냉방 사용 (절약 ↔ 과다)", coef:1.2 },
-  { key:"diet", label:"식습관 (채식 ↔ 육식 위주)", coef:1.5 },
-  { key:"consumption", label:"소비습관 (절약 ↔ 과소비)", coef:1.0 },
-  { key:"recycle", label:"재활용률 (낮음 ↔ 높음)", coef:-1.0 },
-  { key:"travel", label:"여행 빈도 (적음 ↔ 잦음)", coef:0.8 },
-  { key:"water", label:"물 사용 (절약 ↔ 낭비)", coef:0.6 },
-  { key:"internet", label:"인터넷 사용시간 (적음 ↔ 많음)", coef:0.4 },
-  { key:"housing", label:"주거 형태 (공동주택 ↔ 단독주택)", coef:0.5 }
-];
+    <script>
+        // 페이지 요소들 가져오기
+        const pages = document.querySelectorAll('.page');
+        const startButton = document.getElementById('startButton');
+        const quizForm = document.getElementById('quizForm');
+        const showSolutionButton = document.getElementById('showSolutionButton');
+        const restartButtons = document.querySelectorAll('#restartButton1, #restartButton2');
 
-// ===============================
-// 슬라이더 생성
-// ===============================
-const container=document.getElementById("sliders");
-activities.forEach(a=>{
-  const div=document.createElement("div");
-  div.className="row";
-  div.innerHTML=`
-    <label>${a.label}<span id="out_${a.key}">50</span></label>
-    <input type="range" id="${a.key}" min="0" max="100" value="50" step="1">
-  `;
-  container.appendChild(div);
-});
+        // 현재 보이는 페이지를 관리하는 함수
+        function showPage(pageId) {
+            pages.forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById(pageId).classList.add('active');
+        }
 
-// ===============================
-// 계산 함수
-// ===============================
-function calcTotal(){
-  let total=0;
-  activities.forEach(a=>{
-    const v=document.getElementById(a.key).value;
-    const factor=(v-50)/50;
-    const c=a.coef*(1+factor);
-    total+=c>0?c:0;
-  });
-  return total;
-}
+        // 시작 버튼 클릭 이벤트
+        startButton.addEventListener('click', () => {
+            showPage('quizPage');
+        });
+        
+        // 다시하기 버튼 클릭 이벤트
+        restartButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                quizForm.reset();
+                showPage('mainPage');
+            });
+        });
 
-// ===============================
-// 업데이트 함수
-// ===============================
-function update(){
-  const total=calcTotal();
-  const earths=total/3; // 1지구=3톤 기준
-  const numEl=document.getElementById("earthCount");
-  const iconsEl=document.getElementById("earthIcons");
-  const msgEl=document.getElementById("earthMessage");
+        // 결과 계산 및 표시
+        quizForm.addEventListener('submit', (event) => {
+            event.preventDefault(); // 폼 제출 기본 동작 방지
 
-  // 숫자 표시
-  numEl.textContent=earths.toFixed(1);
+            const formData = new FormData(quizForm);
+            const scores = {
+                '이동': parseInt(formData.get('q1')),
+                '식사': parseInt(formData.get('q2')),
+                '소비': parseInt(formData.get('q3')),
+                '전기': parseInt(formData.get('q4')),
+                '쓰레기': parseInt(formData.get('q5'))
+            };
 
-  // 색상 조절
-  if(earths<=1){
-    numEl.style.color="#19734b";
-    msgEl.textContent="지속가능한 수준입니다. 🌱";
-  } else if(earths<=1.5){
-    numEl.style.color="#f2a900";
-    msgEl.textContent="주의! 조금 더 절약이 필요합니다. ⚠️";
-  } else {
-    numEl.style.color="#e63946";
-    msgEl.textContent="지구가 과부하 상태입니다! 🚨";
-  }
+            let total = 0;
+            let maxScore = 0;
+            let maxCategory = '';
 
-  // 🌍 아이콘 개수 표시
-  const count=Math.floor(earths); // 정수 부분
-  let icons="";
-  for(let i=0;i<count;i++) icons+="🌍";
-  if(earths-count>0.5) icons+="🌎"; // 반개 느낌으로 추가
-  if(icons==="") icons="🌍";
-  iconsEl.textContent=icons;
-}
+            for (const category in scores) {
+                total += scores[category];
+                if (scores[category] > maxScore) {
+                    maxScore = scores[category];
+                    maxCategory = category;
+                }
+            }
 
-// ===============================
-// 이벤트 등록
-// ===============================
-activities.forEach(a=>{
-  const s=document.getElementById(a.key);
-  const o=document.getElementById("out_"+a.key);
-  s.addEventListener("input",()=>{
-    o.textContent=s.value;
-    update();
-  });
-});
-update();
-</script>
+            // 결과 페이지 내용 업데이트
+            document.getElementById('totalFootprint').textContent = `${total} gCO₂e`;
+            document.getElementById('treeCount').textContent = (total / 6.6).toFixed(1); // 소나무 한 그루가 하루에 약 6.6g 흡수
+            document.getElementById('chargeCount').textContent = (total / 5).toFixed(1); // 스마트폰 1회 충전 시 약 5g 배출
+            document.getElementById('maxCategory').textContent = `👉 ${maxCategory} 👈`;
+
+            // 솔루션 페이지 내용 업데이트
+            document.getElementById('solutionCategory').textContent = maxCategory;
+            let solution = '';
+            switch(maxCategory) {
+                case '이동':
+                    solution = "내일은 한 정거장 먼저 내려서 걸어보는 건 어때요? 걷기만 해도 탄소를 줄일 수 있어요!";
+                    break;
+                case '식사':
+                    solution = "일주일에 하루는 '고기 없는 날'을 정해보세요! 채식 한 끼가 생각보다 큰 변화를 만들어요.";
+                    break;
+                case '소비':
+                    solution = "외출할 때 텀블러를 챙기는 습관을 들여보세요. 일회용품 사용을 줄이는 최고의 방법이에요!";
+                    break;
+                case '전기':
+                    solution = "안 쓰는 충전기 코드는 뽑아두는 습관을 길러봐요. 대기전력만 줄여도 지구가 웃어요!";
+                    break;
+                case '쓰레기':
+                    solution = "음료수 병의 라벨을 떼서 버리는 작은 실천부터 시작해보세요. 재활용의 시작은 올바른 분리배출이에요!";
+                    break;
+            }
+            document.getElementById('solutionText').textContent = solution;
+
+            showPage('resultPage');
+        });
+
+        // 액션 플랜 보기 버튼 클릭 이벤트
+        showSolutionButton.addEventListener('click', () => {
+            showPage('solutionPage');
+        });
+
+    </script>
 </body>
 </html>

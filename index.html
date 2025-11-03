@@ -3,19 +3,17 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>🌱 생활습관 탄소발자국 시뮬레이터</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<title>🌏 생활습관 탄소발자국 시뮬레이터</title>
 <style>
   body {
     font-family: "Pretendard", system-ui, sans-serif;
-    background: linear-gradient(180deg, #e6f7f1, #f5fefc);
+    background: linear-gradient(180deg, #e8f7f1, #f5fefc);
     color: #222;
     margin: 0;
-    padding: 0;
   }
   header {
     text-align: center;
-    padding: 20px 10px;
+    padding: 20px;
     background: #d4f1e3;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   }
@@ -28,19 +26,14 @@
     font-size: 14px;
     color: #444;
   }
-
-  /* ✅ 화면을 정확히 절반으로 */
   .wrap {
     display: flex;
-    justify-content: space-between;
-    align-items: stretch;
-    height: calc(100vh - 100px);
+    height: calc(100vh - 120px);
     padding: 20px;
     gap: 20px;
   }
-
   .panel {
-    flex: 1; /* 좌우가 동일한 비율 */
+    flex: 1;
     background: white;
     border-radius: 16px;
     padding: 16px;
@@ -49,86 +42,82 @@
     flex-direction: column;
     overflow-y: auto;
   }
-
-  .row {
-    margin-bottom: 12px;
-  }
-
-  label {
-    display: flex;
-    justify-content: space-between;
-    font-size: 14px;
-  }
-
-  input[type="range"] {
+  .row { margin-bottom: 12px; }
+  label { display: flex; justify-content: space-between; font-size: 14px; }
+  input[type="range"] { width: 100%; }
+  .earthGauge {
+    position: relative;
     width: 100%;
-  }
-
-  .grid-2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-
-  .meter {
-    text-align: center;
-    padding: 14px;
+    height: 280px;
+    background: #ecfdf5;
     border-radius: 12px;
-    background: #f0faf6;
-    border: 1px solid #d1efe0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    overflow: hidden;
+    border: 2px solid #cce3d8;
   }
-
-  .meter .val {
-    font-size: 28px;
-    font-weight: 700;
-    color: #19734b;
+  .earthFill {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 0%;
+    background: linear-gradient(180deg, #3bc47c, #1b7e47);
+    transition: height 0.6s ease;
   }
-
-  .meter .unit {
-    font-size: 12px;
-    color: #666;
+  .earthIcon {
+    position: relative;
+    z-index: 2;
+    font-size: 80px;
+    margin-bottom: 40px;
   }
-
-  canvas {
-    width: 100% !important;
-    height: 320px !important;
+  .earthLabel {
+    position: absolute;
+    top: 15px;
+    width: 100%;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
   }
-
+  .earthText {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 16px;
+  }
   @media (max-width: 900px) {
-    .wrap {
-      flex-direction: column;
-      height: auto;
-    }
+    .wrap { flex-direction: column; height: auto; }
   }
 </style>
 </head>
 <body>
 <header>
-  <h1>🌏 생활습관별 탄소발자국 시뮬레이터</h1>
-  <p>10가지 생활습관을 조정하며 연간 CO₂ 배출량 변화를 시각적으로 확인하세요.</p>
+  <h1>🌏 생활습관 탄소발자국 시뮬레이터</h1>
+  <p>10가지 생활습관을 조정하며 내가 사용하는 ‘지구 개수’를 확인해보세요.</p>
 </header>
 
 <div class="wrap">
-  <!-- 좌: 생활습관 조정 -->
+  <!-- 왼쪽: 슬라이더 조정 -->
   <section class="panel">
-    <h2 style="margin-top:0;font-size:18px;">① 생활습관 조정</h2>
+    <h2 style="margin-top:0;">① 생활습관 조정</h2>
     <div id="sliders"></div>
   </section>
 
-  <!-- 우: 결과 -->
+  <!-- 오른쪽: 지구개수 게이지 -->
   <section class="panel">
-    <h2 style="margin-top:0;font-size:18px;">② 결과</h2>
-    <div class="grid-2">
-      <div class="meter">
-        <div class="val" id="totalCO2">0.0</div>
-        <div class="unit">톤 CO₂ / 년</div>
-      </div>
-      <div class="meter">
-        <div class="val" id="earths">1.0</div>
-        <div class="unit">🌍 지구 사용 개수 (1=지속가능)</div>
-      </div>
+    <h2 style="margin-top:0;">② 결과 — 내가 쓰는 지구는?</h2>
+    <div class="earthGauge">
+      <div class="earthFill" id="earthFill"></div>
+      <div class="earthIcon">🌍</div>
+      <div class="earthLabel">지속가능선 (1지구)</div>
     </div>
-    <canvas id="chart" style="margin-top:20px;"></canvas>
+    <div class="earthText">
+      <strong id="earthCount">1.0</strong> 개의 지구가 필요합니다.
+      <p style="font-size:13px;color:#555;margin-top:5px;">
+        1.0 이하 → 지속가능 🌱 | 1.0 초과 → 과소비 🚨
+      </p>
+    </div>
   </section>
 </div>
 
@@ -137,26 +126,26 @@
 // 변수 설정
 // ===============================
 const activities = [
-  { key: "transport", label: "교통수단 이용 (자동차 중심 ↔ 대중교통 중심)", coef: 1.8 },
-  { key: "electricity", label: "전기 사용량 (적음 ↔ 많음)", coef: 1.4 },
-  { key: "heating", label: "난방/냉방 사용 (절약 ↔ 과다)", coef: 1.2 },
-  { key: "diet", label: "식습관 (채식 ↔ 육식 위주)", coef: 1.5 },
-  { key: "consumption", label: "소비습관 (절약 ↔ 과소비)", coef: 1.0 },
-  { key: "recycle", label: "재활용률 (낮음 ↔ 높음)", coef: -1.0 },
-  { key: "travel", label: "여행 빈도 (적음 ↔ 잦음)", coef: 0.8 },
-  { key: "water", label: "물 사용 (절약 ↔ 낭비)", coef: 0.6 },
-  { key: "internet", label: "인터넷 사용시간 (적음 ↔ 많음)", coef: 0.4 },
-  { key: "housing", label: "주거 형태 (공동주택 ↔ 단독주택)", coef: 0.5 },
+  { key:"transport", label:"교통수단 이용 (자동차 중심 ↔ 대중교통 중심)", coef:1.8 },
+  { key:"electricity", label:"전기 사용량 (적음 ↔ 많음)", coef:1.4 },
+  { key:"heating", label:"난방/냉방 사용 (절약 ↔ 과다)", coef:1.2 },
+  { key:"diet", label:"식습관 (채식 ↔ 육식 위주)", coef:1.5 },
+  { key:"consumption", label:"소비습관 (절약 ↔ 과소비)", coef:1.0 },
+  { key:"recycle", label:"재활용률 (낮음 ↔ 높음)", coef:-1.0 },
+  { key:"travel", label:"여행 빈도 (적음 ↔ 잦음)", coef:0.8 },
+  { key:"water", label:"물 사용 (절약 ↔ 낭비)", coef:0.6 },
+  { key:"internet", label:"인터넷 사용시간 (적음 ↔ 많음)", coef:0.4 },
+  { key:"housing", label:"주거 형태 (공동주택 ↔ 단독주택)", coef:0.5 }
 ];
 
 // ===============================
 // 슬라이더 생성
 // ===============================
-const container = document.getElementById("sliders");
-activities.forEach((a) => {
-  const div = document.createElement("div");
-  div.className = "row";
-  div.innerHTML = `
+const container=document.getElementById("sliders");
+activities.forEach(a=>{
+  const div=document.createElement("div");
+  div.className="row";
+  div.innerHTML=`
     <label>${a.label}<span id="out_${a.key}">50</span></label>
     <input type="range" id="${a.key}" min="0" max="100" value="50" step="1">
   `;
@@ -164,70 +153,45 @@ activities.forEach((a) => {
 });
 
 // ===============================
-// 계산 함수
+// 계산 & 업데이트
 // ===============================
-function calcTotal() {
-  let total = 0;
-  activities.forEach((a) => {
-    const v = document.getElementById(a.key).value;
-    const factor = (v - 50) / 50;
-    const c = a.coef * (1 + factor);
-    total += c > 0 ? c : 0;
+function calcTotal(){
+  let total=0;
+  activities.forEach(a=>{
+    const v=document.getElementById(a.key).value;
+    const factor=(v-50)/50;
+    const c=a.coef*(1+factor);
+    total+=c>0?c:0;
   });
   return total;
 }
 
-// ===============================
-// 결과 표시
-// ===============================
-const totalEl = document.getElementById("totalCO2");
-const earthEl = document.getElementById("earths");
-const ctx = document.getElementById("chart").getContext("2d");
-let chart = new Chart(ctx, {
-  type: "doughnut",
-  data: {
-    labels: activities.map((a) => a.label.split(" ")[0]),
-    datasets: [
-      {
-        data: Array(activities.length).fill(0),
-        backgroundColor: [
-          "#72c2a7", "#a3d9a5", "#f2c94c", "#f2994a", "#eb5757",
-          "#56ccf2", "#bb6bd9", "#27ae60", "#2d9cdb", "#9b51e0",
-        ],
-      },
-    ],
-  },
-  options: {
-    plugins: {
-      legend: { position: "bottom" },
-      tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${ctx.formattedValue}톤` } },
-    },
-    cutout: "65%",
-  },
-});
+function update(){
+  const total=calcTotal();
+  const earths=total/3; // 1지구=3톤 기준
+  const percent=Math.min(earths*100,200); // 200%=2지구 제한
+  document.getElementById("earthFill").style.height=Math.min(percent,200)+"%";
+  document.getElementById("earthCount").textContent=earths.toFixed(1);
 
-function update() {
-  const total = calcTotal();
-  totalEl.textContent = total.toFixed(1);
-  const earths = total / 3; // 1지구=3톤 기준
-  earthEl.textContent = earths.toFixed(1);
-  chart.data.datasets[0].data = activities.map((a) => {
-    const v = document.getElementById(a.key).value;
-    const factor = (v - 50) / 50;
-    const c = a.coef * (1 + factor);
-    return c > 0 ? c : 0;
-  });
-  chart.update();
+  // 색 변화 (지속가능 / 위험)
+  const fill=document.getElementById("earthFill");
+  if(earths<=1){
+    fill.style.background="linear-gradient(180deg,#3bc47c,#1b7e47)";
+  }else if(earths<=1.5){
+    fill.style.background="linear-gradient(180deg,#f2c94c,#f2994a)";
+  }else{
+    fill.style.background="linear-gradient(180deg,#eb5757,#9b2226)";
+  }
 }
 
 // ===============================
 // 이벤트 등록
 // ===============================
-activities.forEach((a) => {
-  const s = document.getElementById(a.key);
-  const o = document.getElementById("out_" + a.key);
-  s.addEventListener("input", () => {
-    o.textContent = s.value;
+activities.forEach(a=>{
+  const s=document.getElementById(a.key);
+  const o=document.getElementById("out_"+a.key);
+  s.addEventListener("input",()=>{
+    o.textContent=s.value;
     update();
   });
 });
